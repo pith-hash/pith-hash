@@ -1,0 +1,58 @@
+[workspace]
+members = ["pith-hash-cli"]
+
+[package]
+name = "pith-hash"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "The pith suite curator: detect, tier-1 content hash, tier-2 signatures, match, calibrate and the pith CLI."
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/pith-hash/pith-hash"
+homepage = "https://pith-hash.n24q02m.com"
+categories = ["algorithms", "cryptography"]
+
+# R5 pins the suite at its landed `main` heads (git, branch = "main").
+# R6 publish flips these to the versioned `~0.1` pins of the suite
+# contract (see README "Version pinning"); the switch is the only edit.
+[dependencies]
+# R5 (curator build) pins every suite crate by `git, branch = "main"` so the
+# repository tracks the landed suite heads without a publish step. At R6
+# (crates.io publish) each line switches to the versioned pin the suite
+# contract requires, e.g. `pith-digest = "~0.1"`; this comment marks that
+# switch. `Cargo.lock` records the exact heads this build is verified against.
+pith-digest = { git = "https://github.com/pith-hash/pith-digest.git", branch = "main" }
+pith-math = { git = "https://github.com/pith-hash/pith-math.git", branch = "main" }
+pith-image = { git = "https://github.com/pith-hash/pith-image.git", branch = "main" }
+pith-png = { git = "https://github.com/pith-hash/pith-png.git", branch = "main" }
+pith-jpeg = { git = "https://github.com/pith-hash/pith-jpeg.git", branch = "main" }
+pith-text = { git = "https://github.com/pith-hash/pith-text.git", branch = "main" }
+pith-audio = { git = "https://github.com/pith-hash/pith-audio.git", branch = "main" }
+pith-flac = { git = "https://github.com/pith-hash/pith-flac.git", branch = "main" }
+pith-mp3 = { git = "https://github.com/pith-hash/pith-mp3.git", branch = "main" }
+pith-mp4 = { git = "https://github.com/pith-hash/pith-mp4.git", branch = "main" }
+pith-h264 = { git = "https://github.com/pith-hash/pith-h264.git", branch = "main" }
+pith-video = { git = "https://github.com/pith-hash/pith-video.git", branch = "main" }
+pith-file = { git = "https://github.com/pith-hash/pith-file.git", branch = "main" }
+pith-pdf = { git = "https://github.com/pith-hash/pith-pdf.git", branch = "main" }
+
+[dev-dependencies]
+pith-unicode = { git = "https://github.com/pith-hash/pith-unicode.git", branch = "main" }
+
+[[bin]]
+name = "gen-reference"
+path = "tools/gen-reference/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+# Ported from the upstream kit: codec inner loops (box average, DCT,
+# FFT, H.264) under -O0 are unrealistically slow in hostile-input tests.
+[profile.test]
+opt-level = 2
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"

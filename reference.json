@@ -1,0 +1,326 @@
+{
+  "suite": "pith",
+  "crate": "pith-hash",
+  "format_version": 1,
+  "generator": "cargo run --bin gen-reference -- gen",
+  "description": "Hex-exact cross-modal reference vectors for the pith-hash curator: detect verdicts per container magic, tier-2 signature folds (image pHash, audio landmark folds, MinHash folds, FastCDC chunk folds, video frame-chain folds), describe tier-1 digests with facts, and match outcomes (integer hamming/votes, IEEE-754-bit Jaccard and score pins, exact refusal messages) over the committed fixture corpus plus deterministic inline recipes. Hash pins carry only fixtures with real low-frequency energy; flat fills are excluded (subnormal-floor DCT AC flips bits across platforms).",
+  "vectors": [
+    {
+      "name": "detect-png",
+      "format": "png",
+      "modality": "image",
+      "pending": false
+    },
+    {
+      "name": "detect-jpeg",
+      "format": "jpeg",
+      "modality": "image",
+      "pending": false
+    },
+    {
+      "name": "detect-bmp",
+      "format": "bmp",
+      "modality": "image",
+      "pending": false
+    },
+    {
+      "name": "detect-wav",
+      "format": "wav",
+      "modality": "audio",
+      "pending": false
+    },
+    {
+      "name": "detect-flac",
+      "format": "flac",
+      "modality": "audio",
+      "pending": false
+    },
+    {
+      "name": "detect-mp3",
+      "format": "mp3",
+      "modality": "audio",
+      "pending": false
+    },
+    {
+      "name": "detect-mp4",
+      "format": "mp4",
+      "modality": "video",
+      "pending": false
+    },
+    {
+      "name": "detect-mov",
+      "format": "mp4",
+      "modality": "video",
+      "pending": false
+    },
+    {
+      "name": "detect-pdf",
+      "format": "pdf",
+      "modality": "text",
+      "pending": false
+    },
+    {
+      "name": "detect-zip",
+      "format": "zip",
+      "modality": "binary",
+      "pending": false
+    },
+    {
+      "name": "detect-gif",
+      "format": "gif",
+      "modality": "binary",
+      "pending": false
+    },
+    {
+      "name": "detect-text",
+      "format": "unknown",
+      "modality": "text",
+      "pending": false
+    },
+    {
+      "name": "detect-binary",
+      "format": "unknown",
+      "modality": "binary",
+      "pending": false
+    },
+    {
+      "name": "sig-image-phash_rgb8_48x40",
+      "modality": "image",
+      "phash": "0xc21b869527e1a74f"
+    },
+    {
+      "name": "sig-image-phash_gray8_40x32",
+      "modality": "image",
+      "phash": "0xd3c706284777fc81"
+    },
+    {
+      "name": "sig-image-base_444-png",
+      "modality": "image",
+      "phash": "0x8d0a3f411ee50f7a"
+    },
+    {
+      "name": "sig-image-base_444-jpeg",
+      "modality": "image",
+      "phash": "0x8d0a3f411ee50f7a"
+    },
+    {
+      "name": "sig-image-bmp-patterned-48x40",
+      "modality": "image",
+      "phash": "0xab9fb7e042a4c8e2"
+    },
+    {
+      "name": "sig-audio-tone-wav",
+      "modality": "audio",
+      "peak_count": 594,
+      "peaks_fnv1a64": "3ae085118b315c66",
+      "peaks_sha256": "6e9c37a213e8ce6af645217283387a5e623cded673fddc731d6734a370b06141",
+      "frames": 20
+    },
+    {
+      "name": "sig-audio-tone-flac",
+      "modality": "audio",
+      "peak_count": 594,
+      "peaks_fnv1a64": "3ae085118b315c66",
+      "peaks_sha256": "6e9c37a213e8ce6af645217283387a5e623cded673fddc731d6734a370b06141",
+      "frames": 20
+    },
+    {
+      "name": "sig-audio-l3_short-mp3",
+      "modality": "audio",
+      "peak_count": 318,
+      "peaks_fnv1a64": "97447c439ad9a392",
+      "peaks_sha256": "d0caafafbd4874166ce150006242a74afa54a6ecb73c4fba2706bbae88b2a35c",
+      "frames": 10
+    },
+    {
+      "name": "sig-text-prose-4kib",
+      "modality": "text",
+      "minhash_words": 1024,
+      "minhash_fnv1a64": "bb761c3d213a7fbd",
+      "minhash_sha256": "b11f575e3762139142e00f1ef56f4a1b059e606b8796da8bfc7ebef478d6f399"
+    },
+    {
+      "name": "sig-binary-splitmix64-48kib",
+      "modality": "binary",
+      "chunk_count": 160,
+      "chunks_fnv1a64": "94f69a2363d2a0bd",
+      "chunks_sha256": "e9fcd4223e6580c8362c849ee3c28982f049478471c6058d3907057189936ad5"
+    },
+    {
+      "name": "sig-binary-splitmix64-48kib-prefix-insert",
+      "modality": "binary",
+      "chunk_count": 160,
+      "chunks_fnv1a64": "723e4aa12df2d23e",
+      "chunks_sha256": "e92c1a7e86dcd00e3dc02c240acedd5afc37457c286af38d485ba6c5940f3df6"
+    },
+    {
+      "name": "sig-binary-splitmix64-48kib-unrelated",
+      "modality": "binary",
+      "chunk_count": 224,
+      "chunks_fnv1a64": "26236e4c8d67cc8c",
+      "chunks_sha256": "85ebab46a3af5015872e95dab473adaa114c9de5ecc55c04b7b9eedd1c51d9ea"
+    },
+    {
+      "name": "sig-video-a_64x48-mp4",
+      "modality": "video",
+      "frame_count": 64,
+      "frames_fnv1a64": "345684e1e8d6bd9f",
+      "frames_sha256": "c499ca3e4388c915dfc6d092e5293ddb6c5cf2da5ca41cce4f502c4ab98261bf",
+      "minhash_words": 1024,
+      "minhash_fnv1a64": "6e059b2cbf0e28ad",
+      "width": 64,
+      "height": 48,
+      "duration_bits": "4010000000000000"
+    },
+    {
+      "name": "sig-pdf-text_page",
+      "modality": "text",
+      "minhash_words": 1024,
+      "minhash_fnv1a64": "b6746487a2f4a81b",
+      "minhash_sha256": "8f03a27af74077b2f5f90bf67dd0474dc3b4815752801d2fd6718a52a3d692d3"
+    },
+    {
+      "name": "describe-image-phash_rgb8_48x40",
+      "format": "png",
+      "modality": "image",
+      "tier1": "1f7637f88725b1f3c1b60fb5559486349298b2a5525bac5fb1df196651e0cb74",
+      "phash": "0xc21b869527e1a74f",
+      "facts": { "width": 48, "height": 40, "keypoints": 6 }
+    },
+    {
+      "name": "describe-image-bmp-patterned-48x40",
+      "format": "bmp",
+      "modality": "image",
+      "tier1": "0b04395fb48132819c1883a61e835644bdc23b346d2ff35f3c071ee93be6dadf",
+      "phash": "0xab9fb7e042a4c8e2",
+      "facts": { "width": 48, "height": 40, "keypoints": 382 }
+    },
+    {
+      "name": "describe-audio-tone-wav",
+      "format": "wav",
+      "modality": "audio",
+      "tier1": "0dfdd5e83844d2756e151e5ab6c44b918b6ce1ef8f50df9474f357efe1a8cc9d",
+      "peak_count": 594,
+      "peaks_fnv1a64": "3ae085118b315c66",
+      "peaks_sha256": "6e9c37a213e8ce6af645217283387a5e623cded673fddc731d6734a370b06141",
+      "frames": 20,
+      "facts": { "sample_rate": 44100, "channels": 1, "frames": 20, "peaks": 99 }
+    },
+    {
+      "name": "describe-text-prose-4kib",
+      "format": "unknown",
+      "modality": "text",
+      "tier1": "a718961e73af3221003cd790447665bcd7cdd00ce2d25c3e01a598fbb9badd3b",
+      "minhash_words": 1024,
+      "minhash_fnv1a64": "bb761c3d213a7fbd",
+      "minhash_sha256": "b11f575e3762139142e00f1ef56f4a1b059e606b8796da8bfc7ebef478d6f399",
+      "facts": { "words": 668, "canonical_len": 4096 }
+    },
+    {
+      "name": "describe-binary-splitmix64-48kib",
+      "format": "unknown",
+      "modality": "binary",
+      "tier1": "00553543ee7a066c320e955d03ee87d81bcfcb2a082df28b640a2331deabe744",
+      "chunk_count": 160,
+      "chunks_fnv1a64": "94f69a2363d2a0bd",
+      "chunks_sha256": "e9fcd4223e6580c8362c849ee3c28982f049478471c6058d3907057189936ad5",
+      "facts": { "len": 49152, "chunks": 5 }
+    },
+    {
+      "name": "describe-video-a_64x48-mp4",
+      "format": "mp4",
+      "modality": "video",
+      "tier1": "72a4bbfd76647b2dc9ee06d8d6975ae73ff1ba2e789877dbc3ca88e37fc718aa",
+      "frame_count": 64,
+      "frames_fnv1a64": "345684e1e8d6bd9f",
+      "frames_sha256": "c499ca3e4388c915dfc6d092e5293ddb6c5cf2da5ca41cce4f502c4ab98261bf",
+      "minhash_words": 1024,
+      "minhash_fnv1a64": "6e059b2cbf0e28ad",
+      "width": 64,
+      "height": 48,
+      "duration_bits": "4010000000000000",
+      "facts": { "width": 64, "height": 48, "duration_bits": "4010000000000000", "frames_sampled": 8 }
+    },
+    {
+      "name": "describe-pdf-text_page",
+      "format": "pdf",
+      "modality": "text",
+      "tier1": "849978a1682ba75372094611c8fc290b9c39b84d75641bf0b6129cdbaa880fa9",
+      "minhash_words": 1024,
+      "minhash_fnv1a64": "b6746487a2f4a81b",
+      "minhash_sha256": "8f03a27af74077b2f5f90bf67dd0474dc3b4815752801d2fd6718a52a3d692d3",
+      "facts": { "words": 2, "canonical_len": 10 }
+    },
+    {
+      "name": "match-image-self",
+      "outcome": "image",
+      "hamming": 0,
+      "matched": true
+    },
+    {
+      "name": "match-image-distinct",
+      "outcome": "image",
+      "hamming": 30,
+      "matched": false
+    },
+    {
+      "name": "match-image-png-vs-jpeg-same-pixels",
+      "outcome": "image",
+      "hamming": 0,
+      "matched": true
+    },
+    {
+      "name": "match-audio-self",
+      "outcome": "audio",
+      "votes": 99,
+      "delta_t": 0,
+      "matched": true
+    },
+    {
+      "name": "match-text-self",
+      "outcome": "jaccard",
+      "value_kind": "f64-ieee754-bits-hex",
+      "jaccard_bits": "3ff0000000000000",
+      "matched": true
+    },
+    {
+      "name": "match-text-distinct",
+      "outcome": "jaccard",
+      "value_kind": "f64-ieee754-bits-hex",
+      "jaccard_bits": "3f90000000000000",
+      "matched": false
+    },
+    {
+      "name": "match-binary-near-duplicate",
+      "outcome": "jaccard",
+      "value_kind": "f64-ieee754-bits-hex",
+      "jaccard_bits": "3fe5555555555555",
+      "matched": true
+    },
+    {
+      "name": "match-binary-unrelated",
+      "outcome": "jaccard",
+      "value_kind": "f64-ieee754-bits-hex",
+      "jaccard_bits": "0000000000000000",
+      "matched": false
+    },
+    {
+      "name": "match-video-mp4-vs-mov",
+      "outcome": "video",
+      "value_kind": "f64-ieee754-bits-hex",
+      "score_bits": "3ff0000000000000",
+      "minhash_jaccard_bits": "3ff0000000000000",
+      "matched": true
+    },
+    {
+      "name": "match-error-cross-modality",
+      "outcome": "error",
+      "error_message": "bad value: match_ across different modalities"
+    },
+    {
+      "name": "error-video-non-avc",
+      "outcome": "error",
+      "error_message": "video: unsupported: video codec MPEG-4 part 2"
+    }
+  ]
+}

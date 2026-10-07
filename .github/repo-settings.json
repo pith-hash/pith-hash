@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "tier": 1,
+  "description": "The pith suite curator: detect, tier-1 content hash, tier-2 signatures, match, calibrate and the pith CLI",
+  "homepage": "https://pith-hash.n24q02m.com",
+  "topics": [
+    "rust",
+    "hashing",
+    "deduplication"
+  ]
+}

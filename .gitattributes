@@ -1,0 +1,14 @@
+* text=auto eol=lf
+
+# Fixture binaries (byte-exact corpus; see tests/fixtures/PROVENANCE.md)
+*.png binary
+*.jpg binary
+*.mp3 binary
+*.mp4 binary
+*.mov binary
+*.flac binary
+*.wav binary
+*.pdf binary
+
+# Build artifacts
+/target/

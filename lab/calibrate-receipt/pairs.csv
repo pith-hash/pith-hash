@@ -1,0 +1,29 @@
+# pith calibrate receipt dataset (R5-N1), image lane, 48x40 BMP
+# recipe: fixture::patterned_pixels(seed, 48, 40), seeds b1..b4 = 0xA1..0xA4;
+#   v1 = perturb_pixels(base, seed ^ 0x100, 4, 998)
+#   v2 = perturb_pixels(base, seed ^ 0x200, 4, 999)
+#   v3 = perturb_pixels(base, seed ^ 0x300, 24, 17)  (heavy edit, still label 1)
+# 16 positive pairs (v0/v1, v0/v2, v1/v2, v0/v3 per base), then 6 negatives
+# (cross-base v0 pairs). paths are relative to the CSV's directory.
+dataset/b1_v0.bmp,dataset/b1_v1.bmp,1
+dataset/b1_v0.bmp,dataset/b1_v2.bmp,1
+dataset/b1_v1.bmp,dataset/b1_v2.bmp,1
+dataset/b1_v0.bmp,dataset/b1_v3.bmp,1
+dataset/b2_v0.bmp,dataset/b2_v1.bmp,1
+dataset/b2_v0.bmp,dataset/b2_v2.bmp,1
+dataset/b2_v1.bmp,dataset/b2_v2.bmp,1
+dataset/b2_v0.bmp,dataset/b2_v3.bmp,1
+dataset/b3_v0.bmp,dataset/b3_v1.bmp,1
+dataset/b3_v0.bmp,dataset/b3_v2.bmp,1
+dataset/b3_v1.bmp,dataset/b3_v2.bmp,1
+dataset/b3_v0.bmp,dataset/b3_v3.bmp,1
+dataset/b4_v0.bmp,dataset/b4_v1.bmp,1
+dataset/b4_v0.bmp,dataset/b4_v2.bmp,1
+dataset/b4_v1.bmp,dataset/b4_v2.bmp,1
+dataset/b4_v0.bmp,dataset/b4_v3.bmp,1
+dataset/b1_v0.bmp,dataset/b2_v0.bmp,0
+dataset/b1_v0.bmp,dataset/b3_v0.bmp,0
+dataset/b1_v0.bmp,dataset/b4_v0.bmp,0
+dataset/b2_v0.bmp,dataset/b3_v0.bmp,0
+dataset/b2_v0.bmp,dataset/b4_v0.bmp,0
+dataset/b3_v0.bmp,dataset/b4_v0.bmp,0
