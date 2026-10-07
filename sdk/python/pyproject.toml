@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 pith-hash
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pith-hash"
+version = "0.1.0"
+description = "The pith suite curator SDK: detect, tier-1 content hash, tier-2 signatures, match and describe via the pith-hash Rust cdylib (ctypes, zero-dep)"
+license = "MIT"
+requires-python = ">=3.9"
+keywords = ["hashing", "perceptual-hash", "minhash", "content-defined-chunking", "similarity"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Rust",
+  "Topic :: Security :: Cryptography",
+]
+
+[project.urls]
+Repository = "https://github.com/pith-hash/pith-hash"
+Homepage = "https://pith-hash.n24q02m.com"
+
+[tool.setuptools]
+packages = ["pith_hash"]
+
+[tool.setuptools.package-data]
+pith_hash = ["*.dll", "*.dylib", "*.so"]

@@ -28,8 +28,11 @@
 //! The similarity indexes (BK-tree, banded LSH) and threshold
 //! calibration live in the in-repo [`index`] module.
 
-#![no_std]
-#![forbid(unsafe_code)]
+#![cfg_attr(not(feature = "std"), no_std)]
+// `unsafe` is denied everywhere except `ffi`, the C ABI surface the
+// language SDKs bind through: raw pointers exist only at that boundary,
+// and every exported function is a documented `unsafe extern "C"` fn.
+#![deny(unsafe_code)]
 #![deny(missing_docs)]
 
 extern crate alloc;
@@ -37,7 +40,17 @@ extern crate alloc;
 mod error;
 mod phash;
 
+// The C ABI surface compiles only into the normal rlib/cdylib — never
+// into the `--cfg test` harness build. The test-harness and normal
+// flavors of this crate are separate instrumented codegen units, and
+// two same-named `no_mangle` exports with different function hashes
+// make the coverage merger keep the zero-count copy (the exports are
+// exercised through `tests/ffi.rs`, which links the normal flavor —
+// the same flavor the cdylib is built from).
+#[cfg(not(test))]
+pub mod ffi;
 pub mod index;
+pub mod reference;
 
 use alloc::string::String;
 use alloc::vec::Vec;

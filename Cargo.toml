@@ -13,6 +13,17 @@ repository = "https://github.com/pith-hash/pith-hash"
 homepage = "https://pith-hash.n24q02m.com"
 categories = ["algorithms", "cryptography"]
 
+[lib]
+# The cdylib is the binary every language SDK binds through (ctypes,
+# koffi, cgo); the rlib keeps the Rust consumers unchanged.
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Default-on: the cdylib needs std for its panic handler. The library
+# itself stays no_std-compatible (`--no-default-features` still builds).
+default = ["std"]
+std = []
+
 # R5 pins the suite at its landed `main` heads (git, branch = "main").
 # R6 publish flips these to the versioned `~0.1` pins of the suite
 # contract (see README "Version pinning"); the switch is the only edit.
@@ -53,6 +64,9 @@ codegen-units = 1
 [profile.test]
 opt-level = 2
 
+# `unsafe_code` stays out of this table: the C ABI surface in
+# src/ffi.rs, the language SDKs bind through, must re-allow it with an
+# inner attribute, and `[lints]` entries become command-line flags
+# that inner attributes cannot re-allow.
 [lints.rust]
-unsafe_code = "forbid"
 missing_docs = "deny"

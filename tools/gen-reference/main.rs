@@ -28,61 +28,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
-use pith_digest::{SplitMix64, fnv1a64, sha256};
+use pith_digest::SplitMix64;
+use pith_hash::reference::{f64_bits, fold_audio, fold_binary, fold_words, hex};
 use pith_hash::{Description, Facts, MatchOutcome, Signature, describe, detect, match_, signature};
 
 /// Where the committed copy lives, relative to the repository root.
 const REFERENCE_PATH: &str = "reference.json";
-
-/// The compact fold of an ordered byte payload: element count, FNV-1a
-/// 64 over the little-endian bytes, SHA-256 over the same bytes.
-fn fold_bytes(payload: &[u8]) -> (usize, u64, String) {
-    (
-        payload.len(),
-        fnv1a64(payload),
-        hex(sha256(payload).expect("sha256").as_bytes()),
-    )
-}
-
-/// Folds an ordered `u64` word stream (MinHash signatures, frame-hash
-/// chains): little-endian words concatenated.
-fn fold_words(words: &[u64]) -> (usize, u64, String) {
-    let mut le = Vec::with_capacity(words.len() * 8);
-    for w in words {
-        le.extend_from_slice(&w.to_le_bytes());
-    }
-    fold_bytes(&le)
-}
-
-/// Folds the audio signature's `(t, f)` landmarks: `t` as `u32` LE then
-/// `f` as `u16` LE, per peak, in signature order.
-fn fold_audio(sig: &pith_hash::AudioSignature) -> (usize, u64, String) {
-    let mut le = Vec::new();
-    for p in sig.peaks() {
-        le.extend_from_slice(&p.t.to_le_bytes());
-        le.extend_from_slice(&p.f.to_le_bytes());
-    }
-    fold_bytes(&le)
-}
-
-/// Folds a binary chunk-digest set through the file slice's own
-/// accessor (sorted unique digests, little-endian).
-fn fold_binary(sig: &pith_file::BinarySignature) -> (usize, u64, String) {
-    fold_bytes(&sig.chunks().concat())
-}
-
-fn hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{b:02x}"));
-    }
-    s
-}
-
-/// `f64` as 16-digit hex of the IEEE-754 bit pattern.
-fn f64_bits(v: f64) -> String {
-    format!("{:016x}", v.to_bits())
-}
 
 /// The compact fold fields every signature vector carries, keyed by
 /// modality.
