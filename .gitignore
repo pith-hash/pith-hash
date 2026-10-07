@@ -67,3 +67,5 @@ docs/superpowers/
 # Python SDK build scaffolding
 sdk/python/build/
 *.egg-info/
+sdk/java/target/
+sdk/java/hs_err_pid*.log

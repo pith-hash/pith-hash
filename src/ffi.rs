@@ -356,21 +356,28 @@ pub unsafe extern "C" fn pith_hash_free(ptr: *mut u8, len: usize) {
 }
 
 /// The safe core of [`pith_hash_signature`]: sign, then serialize.
-/// Every facade refusal maps to [`PITH_E_REJECTED`].
-fn signature_bytes(bytes: &[u8]) -> Result<alloc::vec::Vec<u8>, i32> {
+/// Every facade refusal maps to [`PITH_E_REJECTED`]. `pub(crate)`: the
+/// JNI surface (`ffi_jni`) routes through the same core.
+pub(crate) fn signature_bytes(bytes: &[u8]) -> Result<alloc::vec::Vec<u8>, i32> {
     let sig = crate::signature(bytes).map_err(|err| status_of(&err))?;
     Ok(signature_stream(&sig))
 }
 
 /// The safe core of [`pith_hash_describe`]: describe, then serialize.
-fn describe_bytes(bytes: &[u8]) -> Result<alloc::vec::Vec<u8>, i32> {
+/// `pub(crate)`: the JNI surface (`ffi_jni`) routes through the same
+/// core.
+pub(crate) fn describe_bytes(bytes: &[u8]) -> Result<alloc::vec::Vec<u8>, i32> {
     let desc = crate::describe(bytes).map_err(|err| status_of(&err))?;
     Ok(describe_stream(&desc))
 }
 
 /// The safe core of [`pith_hash_match`]: sign both inputs, match, and
-/// flatten the outcome to `(tag, slots, matched)`.
-fn match_slots(a: &[u8], b: &[u8]) -> Result<(u32, [u64; PITH_HASH_MATCH_SLOTS], u32), i32> {
+/// flatten the outcome to `(tag, slots, matched)`. `pub(crate)`: the
+/// JNI surface (`ffi_jni`) routes through the same core.
+pub(crate) fn match_slots(
+    a: &[u8],
+    b: &[u8],
+) -> Result<(u32, [u64; PITH_HASH_MATCH_SLOTS], u32), i32> {
     let left = crate::signature(a).map_err(|err| status_of(&err))?;
     let right = crate::signature(b).map_err(|err| status_of(&err))?;
     let outcome = crate::match_(&left, &right).map_err(|err| status_of(&err))?;
