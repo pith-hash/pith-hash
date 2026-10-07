@@ -4,7 +4,7 @@
 
 - Repo: `pith-hash/pith-hash`
 - Description: The pith suite curator: detect, tier-1 content hash, tier-2 signatures, match, calibrate and the pith CLI
-- License: Apache-2.0
+- License: MIT
 
 ## Build & Test
 
