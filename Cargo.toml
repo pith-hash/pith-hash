@@ -33,23 +33,23 @@ std = []
 # (crates.io publish) each line switches to the versioned pin the suite
 # contract requires, e.g. `pith-digest = "~0.1"`; this comment marks that
 # switch. `Cargo.lock` records the exact heads this build is verified against.
-pith-digest = { git = "https://github.com/pith-hash/pith-digest.git", branch = "main" }
-pith-math = { git = "https://github.com/pith-hash/pith-math.git", branch = "main" }
-pith-image = { git = "https://github.com/pith-hash/pith-image.git", branch = "main" }
-pith-png = { git = "https://github.com/pith-hash/pith-png.git", branch = "main" }
-pith-jpeg = { git = "https://github.com/pith-hash/pith-jpeg.git", branch = "main" }
-pith-text = { git = "https://github.com/pith-hash/pith-text.git", branch = "main" }
-pith-audio = { git = "https://github.com/pith-hash/pith-audio.git", branch = "main" }
-pith-flac = { git = "https://github.com/pith-hash/pith-flac.git", branch = "main" }
-pith-mp3 = { git = "https://github.com/pith-hash/pith-mp3.git", branch = "main" }
-pith-mp4 = { git = "https://github.com/pith-hash/pith-mp4.git", branch = "main" }
-pith-h264 = { git = "https://github.com/pith-hash/pith-h264.git", branch = "main" }
-pith-video = { git = "https://github.com/pith-hash/pith-video.git", branch = "main" }
-pith-file = { git = "https://github.com/pith-hash/pith-file.git", branch = "main" }
-pith-pdf = { git = "https://github.com/pith-hash/pith-pdf.git", branch = "main" }
+pith-digest = { version = "0.1", git = "https://github.com/pith-hash/pith-digest.git", branch = "main" }
+pith-math = { version = "0.1", git = "https://github.com/pith-hash/pith-math.git", branch = "main" }
+pith-image = { version = "0.1", git = "https://github.com/pith-hash/pith-image.git", branch = "main" }
+pith-png = { version = "0.1", git = "https://github.com/pith-hash/pith-png.git", branch = "main" }
+pith-jpeg = { version = "0.1", git = "https://github.com/pith-hash/pith-jpeg.git", branch = "main" }
+pith-text = { version = "0.1", git = "https://github.com/pith-hash/pith-text.git", branch = "main" }
+pith-audio = { version = "0.1", git = "https://github.com/pith-hash/pith-audio.git", branch = "main" }
+pith-flac = { version = "0.1", git = "https://github.com/pith-hash/pith-flac.git", branch = "main" }
+pith-mp3 = { version = "0.1", git = "https://github.com/pith-hash/pith-mp3.git", branch = "main" }
+pith-mp4 = { version = "0.1", git = "https://github.com/pith-hash/pith-mp4.git", branch = "main" }
+pith-h264 = { version = "0.1", git = "https://github.com/pith-hash/pith-h264.git", branch = "main" }
+pith-video = { version = "0.1", git = "https://github.com/pith-hash/pith-video.git", branch = "main" }
+pith-file = { version = "0.1", git = "https://github.com/pith-hash/pith-file.git", branch = "main" }
+pith-pdf = { version = "0.1", git = "https://github.com/pith-hash/pith-pdf.git", branch = "main" }
 
 [dev-dependencies]
-pith-unicode = { git = "https://github.com/pith-hash/pith-unicode.git", branch = "main" }
+pith-unicode = { version = "0.1", git = "https://github.com/pith-hash/pith-unicode.git", branch = "main" }
 
 [[bin]]
 name = "gen-reference"
