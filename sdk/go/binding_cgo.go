@@ -103,7 +103,7 @@ func resolve(libPath string, index int) (unsafe.Pointer, error) {
 		symbols, symbolsErr = ffiSymbols(handle, libPath)
 	})
 	if symbolsErr != nil {
-		return 0, symbolsErr
+		return nil, symbolsErr
 	}
 	return symbols[index], nil
 }
