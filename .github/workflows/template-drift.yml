@@ -1,0 +1,27 @@
+# Template drift check (backlog D-3 / B1): the 19 pith-* repositories each carry
+# a copy of the shared CI/CD and tooling files; this repository holds the
+# canonical copy. The workflow fails when any copy differs from it.
+#
+# Deliberately NOT part of ci.yml: ci.yml is itself a template file and must stay
+# byte-identical in all 19 repositories. This workflow lives in the curator only.
+name: Template drift
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: Suite files match the canonical copy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.13"
+      - name: Compare every suite repository against this checkout
+        run: python scripts/repo-bootstrap/check_template_drift.py
