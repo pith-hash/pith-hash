@@ -114,6 +114,21 @@ fn run_calibrate(csv: &Path, profile: &str) -> String {
     String::from_utf8_lossy(&out.stdout).trim().to_string()
 }
 
+const VERSION_MARK: &str = "with pith ";
+
+/// Drops the version the receipt names, so the comparison covers the measured
+/// numbers; the version changes with every release and is checked on its own.
+fn without_version(receipt: &str) -> String {
+    receipt
+        .lines()
+        .map(|line| match line.find(VERSION_MARK) {
+            Some(at) => &line[..at + VERSION_MARK.len()],
+            None => line,
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[test]
 fn receipt_dataset_is_reproducible() {
     let write_out = std::env::var("PITH_GEN_RECEIPT").is_ok();
@@ -146,8 +161,13 @@ fn receipt_output_matches_pinned() {
         let live = run_calibrate(&csv_path, profile);
         let want = pinned(profile);
         assert_eq!(
-            live, want,
+            without_version(&live),
+            without_version(&want),
             "profile {profile} diverged from the pinned receipt"
+        );
+        assert!(
+            live.ends_with(&format!("{VERSION_MARK}{}", env!("CARGO_PKG_VERSION"))),
+            "profile {profile}: receipt does not name the running pith version:\n{live}"
         );
     }
 }
