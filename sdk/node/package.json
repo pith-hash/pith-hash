@@ -1,6 +1,6 @@
 {
   "name": "@pith-hash/pith-hash",
-  "version": "0.1.0",
+  "version": "0.1.1-beta.1",
   "description": "pith suite curator SDK: detect, tier-1 content hash, tier-2 signatures, match and describe via the pith-hash Rust cdylib (koffi, prebuilt)",
   "license": "MIT",
   "main": "index.js",

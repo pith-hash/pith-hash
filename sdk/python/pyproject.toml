@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pith-hash"
-version = "0.1.0"
+version = "0.1.1-beta.1"
 description = "The pith suite curator SDK: detect, tier-1 content hash, tier-2 signatures, match and describe via the pith-hash Rust cdylib (ctypes, zero-dep)"
 license = "MIT"
 requires-python = ">=3.9"
