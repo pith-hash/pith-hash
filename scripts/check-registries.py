@@ -22,27 +22,56 @@ Registries and what is asserted for each package:
              declares the module path (a module in a subdirectory resolves
              only from a `<subdir>/vX.Y.Z` tag, so a bare `vX.Y.Z` tag fails)
 
+With --content (the default from 0.1.1 on) the readback goes one step further for
+PyPI, npm and Maven: the wheels, the npm tarball and the JAR are downloaded and
+opened, and each must carry the native library of every platform named in
+check-package-contents.py. A registry that lists a version proves nothing about
+whether the package loads; the 0.1.0 packages were listed and still shipped one
+platform's library or none, and a published version cannot be replaced.
+
 The package inventory below is explicit on purpose: it is the list of what the
 release must have published, so a package that silently stopped publishing
 shows up as a failure instead of vanishing from the loop.
 
 Usage:
-    python scripts/check-registries.py [--version 0.1.0] [--only crates,npm]
+    python scripts/check-registries.py [--version 0.1.0] [--only crates,npm] [--[no-]content]
 
 Exits 0 only when every checked package passes. Standard library only.
 """
 from __future__ import annotations
 
 import argparse
+import base64
+import hashlib
+import importlib.util
 import json
+import pathlib
 import re
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
+
+def _load_contents_gate():
+    """check-package-contents.py is the one place that knows what a complete package
+    looks like (platform ids, library names, wheel tags); load it, do not copy it."""
+    path = pathlib.Path(__file__).with_name("check-package-contents.py")
+    spec = importlib.util.spec_from_file_location("check_package_contents", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+pc = _load_contents_gate()
+CONTENT_PLATFORMS = list(pc.PLATFORMS)
+#: First version whose packages must carry every platform's library; 0.1.0 predates
+#: the gate and is known to be incomplete, so it keeps the listing-only readback.
+CONTENT_FROM = (0, 1, 1)
+JAR_PREFIX = "hash/pith/native"
 
 EXPECTED_VERSION = "0.1.0"
 USER_AGENT = "pith-registry-readback (github.com/pith-hash/pith-hash)"
@@ -145,7 +174,34 @@ def _norm_py(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name).lower()
 
 
-def check_pypi(name: str, version: str, get: Fetch) -> list[str]:
+def _stem(name: str) -> str:
+    """cdylib stem of a package: every pith crate is named after its package, `-` -> `_`."""
+    return re.split(r"[/:]", name)[-1].replace("-", "_")
+
+
+def _download(get: Fetch, url: str, dest: pathlib.Path) -> str | None:
+    status, body = get(url)
+    if status != 200:
+        return f"{dest.name}: not downloadable (HTTP {status})"
+    dest.write_bytes(body)
+    return None
+
+
+def _wheel_contents(name: str, files: list[dict], get: Fetch) -> list[str]:
+    wheels = [f for f in files if f.get("filename", "").endswith(".whl") and not f.get("yanked")]
+    with tempfile.TemporaryDirectory() as tmp:
+        paths: list[pathlib.Path] = []
+        for f in wheels:
+            # The file name comes from the registry; keep only its last component.
+            path = pathlib.Path(tmp) / pathlib.PurePosixPath(f["filename"]).name
+            err = _download(get, f.get("url", ""), path)
+            if err:
+                return [err]
+            paths.append(path)
+        return pc.check_wheels(paths, CONTENT_PLATFORMS, _stem(name))
+
+
+def check_pypi(name: str, version: str, get: Fetch, content: bool = False) -> list[str]:
     url = f"https://pypi.org/pypi/{name}/json"
     doc, err = _json(*get(url), url)
     if err:
@@ -163,10 +219,26 @@ def check_pypi(name: str, version: str, get: Fetch) -> list[str]:
         problems.append(f"every file of version {version} is yanked")
     if info.get("version") != version:
         problems.append(f"current version is {info.get('version')!r}, expected {version}")
+    if content:
+        problems += _wheel_contents(name, files, get)
     return problems
 
 
-def check_npm(name: str, version: str, get: Fetch) -> list[str]:
+def _npm_contents(name: str, dist: dict, get: Fetch) -> list[str]:
+    with tempfile.TemporaryDirectory() as tmp:
+        path = pathlib.Path(tmp) / "package.tgz"
+        err = _download(get, dist["tarball"], path)
+        if err:
+            return [err]
+        integrity = dist.get("integrity") or ""
+        if integrity.startswith("sha512-"):
+            digest = base64.b64encode(hashlib.sha512(path.read_bytes()).digest()).decode()
+            if integrity != "sha512-" + digest:
+                return ["the tarball served does not match the integrity hash in the registry's own record"]
+        return pc.check_npm(path, CONTENT_PLATFORMS, _stem(name))
+
+
+def check_npm(name: str, version: str, get: Fetch, content: bool = False) -> list[str]:
     url = "https://registry.npmjs.org/" + name.replace("/", "%2F")
     doc, err = _json(*get(url), url)
     if err:
@@ -195,6 +267,8 @@ def check_npm(name: str, version: str, get: Fetch) -> list[str]:
         problems.append(f"version {version} has no tarball/integrity in its dist record")
     if latest != version:
         problems.append(f"dist-tag latest is {latest!r}, expected {version}")
+    if content and dist.get("tarball"):
+        problems += _npm_contents(name, dist, get)
     return problems
 
 
@@ -217,7 +291,7 @@ def _text(root: ET.Element, tag: str) -> str | None:
     return None
 
 
-def check_maven(coords: str, version: str, get: Fetch) -> list[str]:
+def check_maven(coords: str, version: str, get: Fetch, content: bool = False) -> list[str]:
     group, artifact = coords.split(":")
     base = f"https://repo1.maven.org/maven2/{group.replace('.', '/')}/{artifact}"
     meta_url = f"{base}/maven-metadata.xml"
@@ -244,9 +318,15 @@ def check_maven(coords: str, version: str, get: Fetch) -> list[str]:
         got = (_text(pom, "groupId"), _text(pom, "artifactId"), _text(pom, "version"))
         if got != (group, artifact, version):
             problems.append(f"pom declares {':'.join(map(str, got))}, expected {coords}:{version}")
-    jar_status, _ = get(f"{base}/{version}/{artifact}-{version}.jar")
+    jar_url = f"{base}/{version}/{artifact}-{version}.jar"
+    jar_status, jar_body = get(jar_url)
     if jar_status != 200:
         problems.append(f"jar is not downloadable (HTTP {jar_status})")
+    elif content:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = pathlib.Path(tmp) / f"{artifact}-{version}.jar"
+            path.write_bytes(jar_body)
+            problems += pc.check_jar(path, CONTENT_PLATFORMS, _stem(artifact), JAR_PREFIX)
     return problems
 
 
@@ -279,7 +359,7 @@ def check_go(module: str, version: str, get: Fetch) -> list[str]:
     return problems
 
 
-CHECKS: dict[str, Callable[[str, str, Fetch], list[str]]] = {
+CHECKS: dict[str, Callable[..., list[str]]] = {
     "crates": check_crate,
     "pypi": check_pypi,
     "npm": check_npm,
@@ -288,12 +368,27 @@ CHECKS: dict[str, Callable[[str, str, Fetch], list[str]]] = {
 }
 
 
-def run(version: str, only: set[str], get: Fetch = fetch, workers: int = 4) -> int:
+#: Registries whose check can open the package itself.
+CONTENT_REGISTRIES = {"pypi", "npm", "maven"}
+
+
+def default_content(version: str) -> bool:
+    """Content checks are on from CONTENT_FROM; a prerelease counts as its base version."""
+    base = version.split("-")[0].split("+")[0]
+    try:
+        return tuple(int(x) for x in base.split(".")) >= CONTENT_FROM
+    except ValueError:
+        return False
+
+
+def run(version: str, only: set[str], get: Fetch = fetch, workers: int = 4, content: bool = False) -> int:
     todo = [p for p in PACKAGES if p[0] in only]
 
     def one(pkg: tuple[str, str, str]) -> tuple[tuple[str, str, str], list[str]]:
         registry, name, _ = pkg
         try:
+            if content and registry in CONTENT_REGISTRIES:
+                return pkg, CHECKS[registry](name, version, get, content=True)
             return pkg, CHECKS[registry](name, version, get)
         except Exception as exc:  # a malformed reply must fail the gate, not crash it
             return pkg, [f"could not read the registry reply: {type(exc).__name__}: {exc}"]
@@ -326,12 +421,21 @@ def main() -> int:
         default=",".join(REGISTRIES),
         help="comma-separated registries to check (default: all of %(default)s)",
     )
+    ap.add_argument(
+        "--content",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="open the wheels, tarball and JAR and require every platform's library "
+        "(default: on from %d.%d.%d)" % CONTENT_FROM,
+    )
     args = ap.parse_args()
     only = {r.strip() for r in args.only.split(",") if r.strip()}
     unknown = only - set(REGISTRIES)
     if unknown:
         ap.error(f"unknown registry: {', '.join(sorted(unknown))}")
-    return run(args.version.lstrip("v"), only)
+    version = args.version.lstrip("v")
+    content = default_content(version) if args.content is None else args.content
+    return run(version, only, content=content)
 
 
 if __name__ == "__main__":
