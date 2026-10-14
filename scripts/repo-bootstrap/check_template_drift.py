@@ -48,6 +48,7 @@ TEMPLATE_FILES = [
     "renovate.json",
     "semantic-release.toml",
     "scripts/check-zero-deps.py",
+    "scripts/check-package-contents.py",
     "scripts/enforce-commit.sh",
     "scripts/repo-bootstrap/_lib.py",
     "scripts/repo-bootstrap/verify_readme_sync.py",
