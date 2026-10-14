@@ -5,10 +5,15 @@ Run: python -m unittest scripts/test_check_registries.py
 """
 from __future__ import annotations
 
+import base64
+import hashlib
 import importlib.util
+import io
 import json
 import pathlib
+import tarfile
 import unittest
+import zipfile
 
 _spec = importlib.util.spec_from_file_location(
     "check_registries", pathlib.Path(__file__).with_name("check-registries.py")
@@ -129,6 +134,150 @@ class GoTests(unittest.TestCase):
             f"{self.BASE}/v0.1.0.mod": (200, f"module {self.MOD}\n\ngo 1.25\n".encode()),
         }
         self.assertEqual(cr.check_go(self.MOD, "0.1.0", fake(routes)), [])
+
+
+LIBS = {
+    "linux-x64": "libpith_x.so",
+    "linux-arm64": "libpith_x.so",
+    "darwin-arm64": "libpith_x.dylib",
+    "darwin-x64": "libpith_x.dylib",
+    "win32-x64": "pith_x.dll",
+}
+WHEEL_TAGS = {
+    "linux-x64": "manylinux_2_17_x86_64",
+    "linux-arm64": "manylinux_2_17_aarch64",
+    "darwin-arm64": "macosx_11_0_arm64",
+    "darwin-x64": "macosx_10_12_x86_64",
+    "win32-x64": "win_amd64",
+}
+
+
+def zip_bytes(entries: dict[str, bytes]) -> bytes:
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as z:
+        for name, data in entries.items():
+            z.writestr(name, data)
+    return buf.getvalue()
+
+
+def tgz_bytes(entries: dict[str, bytes]) -> bytes:
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as t:
+        for name, data in entries.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            t.addfile(info, io.BytesIO(data))
+    return buf.getvalue()
+
+
+class PypiContentTests(unittest.TestCase):
+    URL = "https://pypi.org/pypi/pith-x/json"
+    VERSION = "0.1.1"
+
+    def routes(self, drop=(), abi="py3-none", lib_missing=()):
+        files, routes = [], {}
+        for platform, tag in WHEEL_TAGS.items():
+            if platform in drop:
+                continue
+            filename = f"pith_x-{self.VERSION}-{abi}-{tag}.whl"
+            body = zip_bytes({} if platform in lib_missing else {f"pith_x/{LIBS[platform]}": b"\x7fELF"})
+            url = f"https://files.example/{filename}"
+            files.append({"filename": filename, "url": url, "yanked": False})
+            routes[url] = (200, body)
+        doc = {"info": {"name": "pith-x", "version": self.VERSION}, "releases": {self.VERSION: files}}
+        routes[self.URL] = (200, doc)
+        return routes
+
+    def check(self, routes, content=True):
+        return cr.check_pypi("pith-x", self.VERSION, fake(routes), content=content)
+
+    def test_complete_wheel_set_passes(self):
+        self.assertEqual(self.check(self.routes()), [])
+
+    def test_missing_platform_wheel_fails(self):
+        got = self.check(self.routes(drop=("darwin-arm64",)))
+        self.assertTrue(any("darwin-arm64" in p for p in got), got)
+
+    def test_abi_specific_wheel_fails_content(self):
+        got = self.check(self.routes(abi="cp313-cp313"))
+        self.assertTrue(any("py3-none" in p for p in got), got)
+
+    def test_wheel_without_its_library_fails(self):
+        got = self.check(self.routes(lib_missing=("win32-x64",)))
+        self.assertTrue(any("pith_x.dll" in p for p in got), got)
+
+    def test_content_off_keeps_old_behaviour(self):
+        ok = {"info": {"name": "pith-x", "version": "0.1.0"}, "releases": {"0.1.0": [{"yanked": False}]}}
+        self.assertEqual(cr.check_pypi("pith-x", "0.1.0", fake({self.URL: (200, ok)}), content=False), [])
+
+
+class NpmContentTests(unittest.TestCase):
+    URL = "https://registry.npmjs.org/@pith-hash%2Fpith-x"
+    NAME = "@pith-hash/pith-x"
+    TARBALL = "https://registry.npmjs.org/@pith-hash/pith-x/-/pith-x-0.1.1.tgz"
+
+    def routes(self, drop=(), served=None):
+        entries = {f"package/prebuilds/{p}/{lib}": b"bin" for p, lib in LIBS.items() if p not in drop}
+        entries["package/package.json"] = b"{}"
+        body = tgz_bytes(entries)
+        integrity = "sha512-" + base64.b64encode(hashlib.sha512(body).digest()).decode()
+        v = {"name": self.NAME, "version": "0.1.1", "dist": {"tarball": self.TARBALL, "integrity": integrity}}
+        doc = {"name": self.NAME, "dist-tags": {"latest": "0.1.1"}, "versions": {"0.1.1": v}}
+        return {self.URL: (200, doc), self.TARBALL: (200, body if served is None else served)}
+
+    def check(self, routes):
+        return cr.check_npm(self.NAME, "0.1.1", fake(routes), content=True)
+
+    def test_complete_tarball_passes(self):
+        self.assertEqual(self.check(self.routes()), [])
+
+    def test_missing_prebuild_fails(self):
+        got = self.check(self.routes(drop=("linux-arm64",)))
+        self.assertTrue(any("linux-arm64" in p for p in got), got)
+
+    def test_tarball_not_matching_registry_integrity_fails(self):
+        got = self.check(self.routes(served=tgz_bytes({"package/package.json": b"{}"})))
+        self.assertTrue(any("integrity" in p for p in got), got)
+
+
+class MavenContentTests(unittest.TestCase):
+    BASE = MavenTests.BASE
+
+    def routes(self, drop=()):
+        routes = MavenTests().routes(release="0.1.1")
+        entries = {f"hash/pith/native/{p}/{lib}": b"bin" for p, lib in LIBS.items() if p not in drop}
+        routes[f"{self.BASE}/0.1.1/pith-x-0.1.1.jar"] = (200, zip_bytes(entries))
+        return routes
+
+    def check(self, routes):
+        return cr.check_maven("io.github.pith-hash:pith-x", "0.1.1", fake(routes), content=True)
+
+    def test_complete_jar_passes(self):
+        self.assertEqual(self.check(self.routes()), [])
+
+    def test_missing_platform_library_fails(self):
+        got = self.check(self.routes(drop=("darwin-x64",)))
+        self.assertTrue(any("darwin-x64" in p for p in got), got)
+
+
+class ContentModeTests(unittest.TestCase):
+    def test_default_follows_the_version(self):
+        self.assertFalse(cr.default_content("0.1.0"))
+        self.assertTrue(cr.default_content("0.1.1"))
+        self.assertTrue(cr.default_content("0.1.1-beta.1"))
+        self.assertTrue(cr.default_content("0.2.0"))
+
+    def test_run_passes_content_only_to_registries_that_open_packages(self):
+        seen = []
+        original = dict(cr.CHECKS)
+        try:
+            for name in cr.CHECKS:
+                cr.CHECKS[name] = lambda n, v, g, content=False, _r=name: seen.append((_r, content)) or []
+            cr.run("0.1.1", set(cr.REGISTRIES), get=fake({}), content=True)
+        finally:
+            cr.CHECKS.update(original)
+        self.assertEqual({r for r, c in seen if c}, {"pypi", "npm", "maven"})
+        self.assertEqual({r for r, c in seen if not c}, {"crates", "go"})
 
 
 class InventoryTests(unittest.TestCase):
