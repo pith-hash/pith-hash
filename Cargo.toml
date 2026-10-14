@@ -3,7 +3,7 @@ members = ["pith-hash-cli"]
 
 [package]
 name = "pith-hash"
-version = "0.1.1-beta.2"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.85"
 description = "The pith suite curator: detect, tier-1 content hash, tier-2 signatures, match, calibrate and the pith CLI."

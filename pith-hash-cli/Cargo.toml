@@ -1,6 +1,6 @@
 [package]
 name = "pith-hash-cli"
-version = "0.1.1-beta.2"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.85"
 description = "The `pith` command line interface over the pith-hash suite facade."
@@ -14,7 +14,7 @@ categories = ["algorithms", "cryptography"]
 # versioned `~0.1` pin alongside the path (suite contract, "Version
 # pinning").
 [dependencies]
-pith-hash = { path = "..", version = "0.1.1-beta.2" }
+pith-hash = { path = "..", version = "0.1.1" }
 
 [lints.rust]
 unsafe_code = "forbid"
