@@ -53,7 +53,7 @@ dependencies = [
 
 [[package]]
 name = "pith-hash"
-version = "0.1.1-beta.1"
+version = "0.1.1-beta.2"
 dependencies = [
  "pith-audio",
  "pith-digest",
@@ -74,7 +74,7 @@ dependencies = [
 
 [[package]]
 name = "pith-hash-cli"
-version = "0.1.1-beta.1"
+version = "0.1.1-beta.2"
 dependencies = [
  "pith-hash",
 ]
