@@ -134,7 +134,7 @@ class GoTests(unittest.TestCase):
 class InventoryTests(unittest.TestCase):
     def test_inventory_counts(self):
         by = {r: sum(1 for p in cr.PACKAGES if p[0] == r) for r in cr.REGISTRIES}
-        self.assertEqual(by, {"crates": 8, "pypi": 7, "npm": 7, "maven": 4, "go": 7})
+        self.assertEqual(by, {"crates": 20, "pypi": 19, "npm": 19, "maven": 10, "go": 19})
 
     def test_run_fails_when_any_package_fails(self):
         self.assertEqual(cr.run("0.1.0", {"npm"}, get=fake({})), 1)

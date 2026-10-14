@@ -52,8 +52,13 @@ MAVEN_GROUP = "io.github.pith-hash"
 # Every pith repo ships a Rust core crate, a PyPI wheel set, an npm package and
 # a cgo Go module; only some ship a JNI jar. pith-hash also ships the `pith` CLI
 # crate. Keep in step with each repo's sdk/ directories and Cargo workspace.
-REPOS = ["cdc", "digest", "file", "hash", "inflate", "png", "zip"]
-JAVA_REPOS = ["digest", "file", "hash", "inflate"]
+REPOS = [
+    "audio", "cdc", "digest", "file", "flac", "h264", "hash", "image", "inflate", "jpeg",
+    "math", "mp3", "mp4", "pdf", "png", "text", "unicode", "video", "zip",
+]
+JAVA_REPOS = [
+    "audio", "digest", "file", "hash", "image", "inflate", "math", "text", "unicode", "video",
+]
 EXTRA_CRATES = ["pith-hash-cli"]
 
 REGISTRIES = ("crates", "pypi", "npm", "maven", "go")
