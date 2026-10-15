@@ -36,8 +36,10 @@ REPOS = [
     "pith-mp4", "pith-h264", "pith-video", "pith-hash",
 ]
 
-# Files that must be byte-identical across the suite. LICENSE, .gitignore,
-# .gitattributes, .skret.yaml and SECURITY.md are per-repository on purpose.
+# Files that must be byte-identical across the suite. .gitignore,
+# .gitattributes, .skret.yaml, SECURITY.md and NOTICE are per-repository on
+# purpose; LICENSE is not byte-compared here but is held to the canonical MIT
+# text in every repository by scripts/check-license-clean.py.
 TEMPLATE_FILES = [
     ".github/workflows/ci.yml",
     ".github/workflows/cd.yml",
@@ -48,6 +50,8 @@ TEMPLATE_FILES = [
     "renovate.json",
     "semantic-release.toml",
     "scripts/check-zero-deps.py",
+    "scripts/check-license-clean.py",
+    "scripts/test_check_license_clean.py",
     "scripts/check-package-contents.py",
     "scripts/test_check_package_contents.py",
     "scripts/stamp-release.py",
